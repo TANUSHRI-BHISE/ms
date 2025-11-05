@@ -1,0 +1,180 @@
+1) use companydb;
+
+2) db.createCollection("Order");
+
+3) db.Order.insert({Customer_id:'A1',Amount:400,Status:'P'});
+4) db.Order.insert({Customer_id:'B1',Amount:300,Status:'D'});
+5) db.Order.insert({Customer_id:'A1',Amount:200,Status:'F'});
+6) db.Order.insert({Customer_id:'C1',Amount:200,Status:'F'});
+7) db.Order.insert({Customer_id:'B1',Amount:700,Status:'P'});
+8) db.Order.insert({Customer_id:'B1',Amount:800,Status:'P'});
+
+9) db.Order.find();
+
+10) var mapfunction = function() { emit(this.Customer_id, this.Amount); };
+11) var reducefunction = function(key, values) { return Array.sum(values); };
+12) db.Order.mapReduce(mapfunction, reducefunction, {query:{Status:"P"}, out:'Order_total'});
+
+13) var mapfunction = function() { emit(this.Customer_id, this.Amount); };
+14) var reducefunction = function(key, values) { return Array.avg(values); };
+15) db.Order.mapReduce(mapfunction, reducefunction, {out:'Order_average'});
+
+16) var mapfunction = function() { emit(this.Customer_id, this.Amount); };
+17) var reducefunction = function(key, values) { return Math.min.apply(Math, values); };
+18) db.Order.mapReduce(mapfunction, reducefunction, {out:'Order_minimum'});
+
+19) var mapfunction = function() { emit(this.Customer_id, this.Amount); };
+20) var reducefunction = function(key, values) { return Math.max.apply(Math, values); };
+21) db.Order.mapReduce(mapfunction, reducefunction, {query:{Status:"F"}, out:'Order_Maximum_F'});
+---------------------------------------------------------//-----------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------
+1️⃣ Create / Use Database
+------------------------------------------------------------
+
+use companydb;
+
+✅ Explanation:
+Switches to the companydb database (creates it automatically if not already present).
+All the following collections and operations will be stored here.
+
+------------------------------------------------------------
+2️⃣ Create Collection
+------------------------------------------------------------
+
+db.createCollection("Order");
+
+✅ Explanation:
+Creates a new collection named Order that will store customer order details.
+
+------------------------------------------------------------
+3️⃣ Insert Sample Documents
+------------------------------------------------------------
+db.Order.insert({Customer_id:'A1',Amount:400,Status:'P'});
+db.Order.insert({Customer_id:'B1',Amount:300,Status:'D'});
+db.Order.insert({Customer_id:'A1',Amount:200,Status:'F'});
+db.Order.insert({Customer_id:'C1',Amount:200,Status:'F'});
+db.Order.insert({Customer_id:'B1',Amount:700,Status:'P'});
+db.Order.insert({Customer_id:'B1',Amount:800,Status:'P'});
+
+
+✅ Explanation:
+Inserts multiple customer orders with fields:
+
+Customer_id: unique ID of customer.
+
+Amount: order value.
+
+Status:
+
+P → Pending
+
+D → Delivered
+
+F → Failed
+
+------------------------------------------------------------
+4️⃣ View Inserted Data
+------------------------------------------------------------
+
+db.Order.find();
+
+✅ Explanation:
+Displays all the inserted documents to verify the data.
+
+------------------------------------------------------------
+5️⃣ MapReduce — Find Total Amount (Status = 'P')
+------------------------------------------------------------
+var mapfunction = function() { emit(this.Customer_id, this.Amount); };
+var reducefunction = function(key, values) { return Array.sum(values); };
+db.Order.mapReduce(mapfunction, reducefunction, {query:{Status:"P"}, out:'Order_total'});
+
+
+✅ Explanation:
+✔ mapfunction: Emits each customer's ID with their order amount.
+✔ reducefunction: Sums all order amounts for each customer.
+✔ query:{Status:'P'} filters only Pending orders.
+✔ Output stored in new collection Order_total.
+
+------------------------------------------------------------
+6️⃣ MapReduce — Find Average Amount of Each Customer
+------------------------------------------------------------
+var mapfunction = function() { emit(this.Customer_id, this.Amount); };
+var reducefunction = function(key, values) { return Array.avg(values); };
+db.Order.mapReduce(mapfunction, reducefunction, {out:'Order_average'});
+
+
+✅ Explanation:
+✔ Calculates average order amount for each customer (across all statuses).
+✔ Uses Array.avg() to compute mean value per key.
+✔ Output stored in collection Order_average.
+
+------------------------------------------------------------
+7️⃣ MapReduce — Find Minimum Amount of Each Customer
+------------------------------------------------------------
+var mapfunction = function() { emit(this.Customer_id, this.Amount); };
+var reducefunction = function(key, values) { return Math.min.apply(Math, values); };
+db.Order.mapReduce(mapfunction, reducefunction, {out:'Order_minimum'});
+
+
+✅ Explanation:
+✔ Uses Math.min.apply() to find smallest amount for each customer.
+✔ Output stored in Order_minimum.
+
+------------------------------------------------------------
+8️⃣ MapReduce — Find Maximum Amount (Status = 'F')
+------------------------------------------------------------
+var mapfunction = function() { emit(this.Customer_id, this.Amount); };
+var reducefunction = function(key, values) { return Math.max.apply(Math, values); };
+db.Order.mapReduce(mapfunction, reducefunction, {query:{Status:"F"}, out:'Order_Maximum_F'});
+
+
+✅ Explanation:
+✔ Filters documents with Status = 'F' (Failed).
+✔ Finds maximum order amount for each such customer.
+✔ Results stored in Order_Maximum_F.
+
+------------------------------------------------------------
+9️⃣ Display MapReduce Results
+------------------------------------------------------------
+db.Order_total.find();
+db.Order_average.find();
+db.Order_minimum.find();
+db.Order_Maximum_F.find();
+
+
+✅ Explanation:
+Displays results from all four MapReduce outputs — total, average, minimum, and maximum values per customer.
+
+------------------------------------------------------------
+✅ Sample Output
+------------------------------------------------------------
+> db.Order_total.find()
+{ "_id" : "A1", "value" : 400 }
+{ "_id" : "B1", "value" : 1500 }
+
+> db.Order_average.find()
+{ "_id" : "A1", "value" : 333.3333 }
+{ "_id" : "B1", "value" : 600 }
+{ "_id" : "C1", "value" : 200 }
+
+> db.Order_minimum.find()
+{ "_id" : "A1", "value" : 200 }
+{ "_id" : "B1", "value" : 300 }
+{ "_id" : "C1", "value" : 200 }
+
+> db.Order_Maximum_F.find()
+{ "_id" : "A1", "value" : 200 }
+{ "_id" : "C1", "value" : 200 }
+
+------------------------------------------------------------
+✅ Summary of Assignment No. 13
+------------------------------------------------------------
+Concept	Description
+Database	companydb
+Collection	Order
+Map Function	Emits Customer ID with Amount
+Reduce Function	Performs SUM, AVG, MIN, MAX
+Filter Used	query:{Status:"P"} and query:{Status:"F"}
+Output Collections	Order_total, Order_average, Order_minimum, Order_Maximum_F
+Key Concept	MapReduce in MongoDB for aggregation
+✅ End of Assignment No. 13
